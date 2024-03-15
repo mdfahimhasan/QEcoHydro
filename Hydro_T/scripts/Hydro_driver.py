@@ -5,7 +5,6 @@ from toy_model import toymodel
 # 1st 3 columns are year, month, day (except Lat_Lon_Area_Z)
 # the 15 columns after yy-mm-dd are for 15 different catchments
 vp_data = '../data/e.csv'  # vapor pressure (kpa)
-Lnet_data = '../data/L_net.csv'  # Net longwave radiation
 precip_data = '../data/Precip.csv'
 Lat_lon_area_Z_data = '../data/Lat_Lon_Area_Z.csv'  # Latitude, longitude, area (m2), and elevation data (m)
 Q_data = '../data/Q_mm.csv'  # streamflow (mm)
@@ -16,7 +15,6 @@ u2_data = '../data/u2.csv'  # wind speed at 2m (m/s)
 # # load datasets
 # removing 1st 3 columns, i.e., year, month, day (except Lat_Lon_Area_Z)
 vp_arr = np.loadtxt(vp_data, delimiter=',')[:, 3:]
-Lnet_arr = np.loadtxt(Lnet_data, delimiter=',')[:, 3:]
 precip_arr = np.loadtxt(precip_data, delimiter=',')[:, 3:]
 Lat_lon_area_Z_arr = np.loadtxt(Lat_lon_area_Z_data, delimiter=',')
 Q_arr = np.loadtxt(Q_data, delimiter=',')[:, 3:]
