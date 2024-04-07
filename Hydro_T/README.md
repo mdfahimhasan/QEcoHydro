@@ -1,4 +1,4 @@
-A toy hydrologic model that uses vapor pressure, precipitation, lat/lon, elevation, incoming shortwavem temperature, and wind speed datasets to estiamte extraterrestrial and clear sky 
+A toy hydrologic model that uses vapor pressure, precipitation, lat/lon, elevation, incoming shortwave, temperature, and wind speed datasets to estiamte extraterrestrial and clear sky 
 solar radiation, net longwave radiation, net radiation, PET, and ET (as a function of simulated PET and soil moisture). Finally, it employs 
 fast/unsaturated/saturated reservoirs to simulate total streamflow. 
 
