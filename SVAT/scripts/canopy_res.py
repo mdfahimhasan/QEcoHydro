@@ -1,8 +1,12 @@
+# Author: Md Fahim Hasan
+# Email: Fahim.Hasan@colostate.edu
+
 import numpy as np
 from vars_constants import EnvConstants, ForestConstants, GrassConstants
 
 
 # Part B: Surface Resistance Parameterization
+# Using the Jarvis-Stewart scheme (ref: Terrestrial Hydrometry by Shuttleworth)
 
 class surface_res:
 

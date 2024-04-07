@@ -1,3 +1,6 @@
+# Author: Md Fahim Hasan
+# Email: Fahim.Hasan@colostate.edu
+
 import numpy as np
 from reservoirs import SF_eq, SU_eq, SS_eq
 

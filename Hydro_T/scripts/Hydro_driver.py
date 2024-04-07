@@ -1,3 +1,6 @@
+# Author: Md Fahim Hasan
+# Email: Fahim.Hasan@colostate.edu
+
 from radiation_PET import *
 from toy_model import toymodel
 

@@ -1,3 +1,6 @@
+# Author: Md Fahim Hasan
+# Email: Fahim.Hasan@colostate.edu
+
 from vars_constants import EnvConstants, ForestConstants, GrassConstants
 
 

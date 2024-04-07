@@ -1,3 +1,6 @@
+# Author: Md Fahim Hasan
+# Email: Fahim.Hasan@colostate.edu
+
 import os
 import pandas as pd
 

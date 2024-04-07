@@ -1,3 +1,6 @@
+# Author: Md Fahim Hasan
+# Email: Fahim.Hasan@colostate.edu
+
 import numpy as np
 import matplotlib.pyplot as plt
 from Ra_Rso import calc_Ra_Rso
