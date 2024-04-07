@@ -2,7 +2,7 @@ A toy hydrologic model that uses vapor pressure, precipitation, lat/lon, elevati
 solar radiation, net longwave radiation, net radiation, PET, and ET (as a function of simulated PET and soil moisture). Finally, it employs 
 fast/unsaturated/saturated reservoirs to simulate total streamflow. Details can be found in the docs section.
 
-The main difference between this model (Hydro_T) and the SVAT model in this repository is - the Hydro_T model estimates PET as function of soil moisture (soil moisture availability ratio estimated from unsaturated zone storage and unsaturated zone maximus storage capacity), while the SVAT model employs the Penman–Monteith equation to estimate ET. 
+The main difference between this model (Hydro_T) and the SVAT model in this repository is - the Hydro_T model estimates PET as function of soil moisture (soil moisture availability ratio estimated from unsaturated zone storage and unsaturated zone maximus storage capacity), while the SVAT model employs the Penman–Monteith equation to estimate ET. Soil moisture simualtion is different from the SVAT model as well. The SVAT model uses a combination of maximum cacopy storage, canopy storage, and canopy drainage to simulate soil moisture at every stage. However, the Hydro_T model employ a series of reservoirs to simulate soil moisture (starts with infiltration estimation using a fast flow resrvoir, initial storage and recharge calculation using an unsaturated zone reservoir, and finally the balance between infiltration, recharge, and maximum storage capacity to estimate current soil moisture).
 
 __References:__ 
 1. [Terrestrial Hydrometeorology by W. James Shuttleworth](https://onlinelibrary.wiley.com/doi/book/10.1002/9781119951933)
