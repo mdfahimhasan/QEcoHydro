@@ -30,7 +30,7 @@ class surface_res:
         :param SMo: Maximum soil moisture accessible to roots. Parameter in Equ (24.6) (mm).
         :param SMinit: Initial Root-accessible soil moisture (mm).
         :param canopy_type: 'forest' or 'grass'. Will use the text to get values of h, LAI, and zm from the
-                             vars.py file. Default set to 'grass'.
+                             params.py file. Default set to 'grass'.
 
         :param gR: Resistance to soil heat flux (none). Defaults set to None.
         :param gD: Resistance to vapor pressure deficit (none). Defaults set to None.

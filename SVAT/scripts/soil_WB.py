@@ -15,7 +15,7 @@ class soil_WB:
         :param SMo: Maximum soil moisture accessible to roots (mm). Crop constant.
         :param S: Maximum Canopy Water Storage (mm).
         :param canopy_type: 'forest' or 'grass'. Will use the text to get values of h, LAI, and zm from the
-                                 vars.py file. Default set to 'grass'.
+                                 params.py file. Default set to 'grass'.
 
         :param SMnew: New soil moisture (mm). Default set to None.
         """

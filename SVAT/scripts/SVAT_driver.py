@@ -34,8 +34,8 @@ def run_SVAT(forcing_csv, canopy_type, output_csv):
     # # # Part B: Surface Resistance Parameterization
     atm = atmosphere()  # initializing atm class instance
     data_df['e'] = data_df['q'].apply(atm.calc_e)  # vapor pressure (kPa)
-    data_df['e_sat'] = data_df['Ta'].apply(atm.calc_esat)  # saturation vapor pressure (kPa)
-    data_df['VPD'] = data_df.apply(lambda row: atm.calc_VPD(row['e_sat'], row['e']), axis=1)  # vapor pressure deficit (kPa)
+    data_df['esat'] = data_df['Ta'].apply(atm.calc_esat)  # saturation vapor pressure (kPa)
+    data_df['VPD'] = data_df.apply(lambda row: atm.calc_VPD(row['esat'], row['e']), axis=1)  # vapor pressure deficit (kPa)
 
     sr = surface_res(canopy_type=canopy_type)  # initializing surface_res class instance
     data_df['gR'] = data_df['SR_down'].apply(sr.calc_gR)  # resistance to soil heat flux (none)
@@ -54,7 +54,7 @@ def run_SVAT(forcing_csv, canopy_type, output_csv):
     # # # Part D: Canopy Water Balance Parameterization (Includes Interception)
     cwb = canopy_WB(canopy_type=canopy_type)  # initializing canopy_WB class instance
     data_df['Lambda'] = data_df['Ta'].apply(cwb.calc_LH)  # latent heat of vaporization (lambda) (J/kg)
-    data_df['delta'] = data_df.apply(lambda row: cwb.calc_delta(row['Ta'], row['e_sat']),
+    data_df['delta'] = data_df.apply(lambda row: cwb.calc_delta(row['Ta'], row['esat']),
                                      axis=1)  # slope of the saturation vapor pressure curve (kPa/°C)
     data_df['psy_const'] = data_df['Lambda'].apply(cwb.calc_psy_const)  # psychrometric constant (kPa/°C)
 

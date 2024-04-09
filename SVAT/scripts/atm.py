@@ -30,7 +30,7 @@ class atmosphere:
         """
         Calculate vapor pressure from specific humidity and pressure (Eq. 2.9 in TH)
         :param q: Specific humidity (g kg-1).
-        :param P: Atmospheric pressure (kPa) from EnvConstants from "vars.py".
+        :param P: Atmospheric pressure (kPa) from EnvConstants from "params.py".
         :return: Vapor pressure (kPa).
         """
         q = q / 1000  # converting g/kg to kg/kg

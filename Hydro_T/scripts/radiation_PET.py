@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from Ra_Rso import calc_Ra_Rso
 
 
-def cal_lambda(Temp):
+def calc_lambda(Temp):
     """
     Calculate latent heat of vaporization (lambda) at given temperature.
 
@@ -20,11 +20,11 @@ def cal_lambda(Temp):
     return lambda_
 
 
-def calc_Lnet(Sin, Rso, vp, temp):
+def calc_Lnet(SW_in, Rso, vp, temp):
     """
     Calculate net longwave radiation.
 
-    :param Sin: Incoming solar radiation (W/m2).
+    :param SW_in: Incoming solar radiation (W/m2).
     :param Rso: Clear sky solar radiation (W/m2).
     :param vp: Vapor pressure (kpa).
     :param temp: Temperature (deg C).
@@ -32,9 +32,9 @@ def calc_Lnet(Sin, Rso, vp, temp):
     :returns: net longwave radiation (W/m2).
     """
     # empirical cloud factor
-    # Sin is calculated by TH eq. 5.16 or given.
+    # SW_in is calculated by TH eq. 5.16 or given.
     # Rso is calculated using dates, lat, elev (look into Ra_Rso.py for detail)
-    f = Sin / Rso  # unitless
+    f = SW_in / Rso  # unitless
 
     # effective emissivity
     e_prime = 0.34 - 0.14 * np.sqrt(vp / 1000)  # TH eq. 5.23; unitless
@@ -50,7 +50,7 @@ def calc_Rn_RC(SW_in, Lnet):
     """
     Calculate net radiation for reference crop.
 
-    :param SW_in: Incoming shortwave radiation (W/m22).
+    :param SW_in: Incoming shortwave radiation (W/m2).
     :param Lnet: Net longwave radiation (W/m2).
 
     :return: Net solar radiation (W m-2).
@@ -78,7 +78,7 @@ def calc_PET(u2, Temp, e, Z, SW_in, Lnet):
     """
 
     # saturated Vapor Pressure (kPa)
-    # Temp in deg C
+    # temp in deg C
     e_sat = 0.6108 * np.exp((17.27 * Temp) / (237.3 + Temp))
 
     # vapor pressure deficit (kPa)
@@ -92,10 +92,10 @@ def calc_PET(u2, Temp, e, Z, SW_in, Lnet):
 
     # psychrometric Constant (kPa/degC)
     cp = 1.1013  # specific heat at constant pressure for air kJ/(kg.K)
-    lambda_ = cal_lambda(Temp)
+    lambda_ = calc_lambda(Temp)
     gamma = cp * press / (0.622 * lambda_)  # TH eq. 2.25
 
-    # conversion Factor from W/m2 to mm/day
+    # conversion Factor from W/m2 to mm/day (1000 is density of water in kg/m3)
     Wm2_mm = (lambda_ * 1000)**-1 * 86400
 
     # Rn_RC
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     Lat_lon_area_Z_data = '../data/Lat_Lon_Area_Z.csv'  # Latitude, longitude, area (m2), and elevation data (m)
     Q_data = '../data/Q_mm.csv'  # streamflow (mm)
     Sin_data = '../data/S_in.csv'  # solar radiation (W/m2)
-    Temp_data = '../data/Temp.csv'  # temperature (deg C)
+    Temp_data = '../data/temp.csv'  # temperature (deg C)
     u2_data = '../data/u2.csv'  # wind speed at 2m (m/s)
 
     # # load datasets
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     Ra, Ra_Wm2, Rso, Rso_Wm2 = calc_Ra_Rso(dates=dates, lat=lat, elev=elev)
 
     # # calculate net longwave
-    Lnet = calc_Lnet(Sin=Sin_arr, Rso=Rso_Wm2, vp=vp_arr, temp=Temp_arr)  # in W/m2
+    Lnet = calc_Lnet(SW_in=Sin_arr, Rso=Rso_Wm2, vp=vp_arr, temp=Temp_arr)  # in W/m2
 
     # # Generate net radiation for reference crop
     # this step is calculated within the calc_PET function in the next step

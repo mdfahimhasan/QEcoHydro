@@ -18,9 +18,9 @@ class canopy_WB:
         :param rho_a: Moist Air density (kg m-3).
         :param S: Maximum Canopy Water Storage (mm).
         :param canopy_type: 'forest' or 'grass'. Will use the text to get values of h, LAI, and zm from the
-                                 vars.py file. Default set to 'grass'.
+                                 params.py file. Default set to 'grass'.
 
-        :param LH: Latent heat of vaporization (lambda) (J/kg). Defaults set to None.
+        :param LH_vap: Latent heat of vaporization (lambda) (J/kg). Defaults set to None.
         :param delta: Slope of the saturation vapor pressure curve (kPa/°C). Defaults set to None.
         :param psy_const: Psychrometric constant (kPa/°C). Defaults set to None.
         :param Cinterim: Interim canopy storage (mm). Defaults set to None.
@@ -233,7 +233,7 @@ if __name__ == '__main__':
     print('=== Grass ===')
     CWB_g = canopy_WB(canopy_type='grass')
     LH = CWB_g.calc_LH(Tc=10.68)
-    print(f'LH = {LH} W/m2')
+    print(f'LH_vap = {LH} W/m2')
 
     print(f'delta = {CWB_g.calc_delta(Tc=10.68, e_sat=12.697)} kPa/°C')
     print(f'psy. const = {CWB_g.calc_psy_const(LH)} kPa/°C')

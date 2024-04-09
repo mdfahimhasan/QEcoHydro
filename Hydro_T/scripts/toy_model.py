@@ -20,7 +20,7 @@ def toymodel(P, Ep, mir, Su_max, Ts, Tf, beta):
     :returns
     - Ea: Actual evapotranspiration
     - QF: Quick flow (fast runoff)
-    - R: Recharge to the saturated zone
+    - r: Recharge to the saturated zone (contributing to baseflow)
     - QS: Slow flow (baseflow)
     - QT: Total flow (QF + QS)
     - Sf: Storage in the fast flow reservoir
@@ -34,7 +34,7 @@ def toymodel(P, Ep, mir, Su_max, Ts, Tf, beta):
     M = len(P)  # number of data points/iterations/steps
 
     # Initialize output arrays
-    QF, QS, SE, QT, R, Sf, Su, Ss, Ea, alpha, IE = [np.zeros(M) for _ in range(11)]
+    QF, QS, SE, QT, r, Sf, Su, Ss, Ea, alpha, IE = [np.zeros(M) for _ in range(11)]
 
     # Initial conditions
     S0 = 0.2  # Initial storage for all reservoirs
@@ -56,7 +56,7 @@ def toymodel(P, Ep, mir, Su_max, Ts, Tf, beta):
         # Update components of unsaturated zone reservoir (recharge, evapotranspiration, unsaturated storage, and saturation excess)
         r, se, E, Su_dt = SU_eq(Su_0=Su_dt, P=P[t], Ep=Ep[t], Sumax=Su_max, alpha=alpha[t], beta=beta)
 
-        R[t], Ea[t], Su[t], SE[t] = r, E, Su_dt, se
+        r[t], Ea[t], Su[t], SE[t] = r, E, Su_dt, se
 
         # Update saturated zone reservoir (slow flow and saturated zone storage)
         Qs, Ss_dt = SS_eq(Ss_dt, r, Ts)
@@ -71,4 +71,4 @@ def toymodel(P, Ep, mir, Su_max, Ts, Tf, beta):
     QT = QF + QS  # Total flow is the sum of quick flow and slow flow
     St = Su + Ss  # Total storage is the sum of unsaturated and saturated zone storages
 
-    return Ea, QF, R, QS, QT, Sf, Su, Ss, St, alpha, IE, SE
+    return Ea, QF, r, QS, QT, Sf, Su, Ss, St, alpha, IE, SE

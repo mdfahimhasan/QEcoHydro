@@ -12,7 +12,7 @@ precip_data = '../data/Precip.csv'
 Lat_lon_area_Z_data = '../data/Lat_Lon_Area_Z.csv'  # Latitude, longitude, area (m2), and elevation data (m)
 Q_data = '../data/Q_mm.csv'  # streamflow (mm)
 Sin_data = '../data/S_in.csv'  # solar radiation (W/m2)
-Temp_data = '../data/Temp.csv'  # temperature (deg C)
+Temp_data = '../data/temp.csv'  # temperature (deg C)
 u2_data = '../data/u2.csv'  # wind speed at 2m (m/s)
 
 # # load datasets
@@ -36,7 +36,7 @@ Ra, Ra_Wm2, Rso, Rso_Wm2 = calc_Ra_Rso(dates=dates, lat=lat, elev=elev)
 print('Step 1: Estimated extraterrestrial and clear sky radiation radiation...')
 
 # # calculate net longwave
-Lnet = calc_Lnet(Sin=Sin_arr, Rso=Rso_Wm2, vp=vp_arr, temp=Temp_arr)  # in W/m2
+Lnet = calc_Lnet(SW_in=Sin_arr, Rso=Rso_Wm2, vp=vp_arr, temp=Temp_arr)  # in W/m2
 print('Step 2: Estimated net Longwave radiation...')
 
 # # Generate net radiation for reference crop
@@ -57,7 +57,7 @@ precip_catchment = precip_arr[:, catchment_idx]
 E_RC_catchment = E_RC_mm[:, catchment_idx]
 
 # the reservoir operations will be implemented inside the hydrologic model
-Ea, QF, R, QS, QT, Sf, Su, Ss, St, AL, IE, SE = \
+Ea, QF, r, QS, QT, Sf, Su, Ss, St, AL, IE, SE = \
     toymodel(P=precip_catchment, Ep=E_RC_catchment, mir=50, Su_max=450, Ts=5, Tf=1, beta=1)
 print(f'Step 5: Ea, QF, R, QS, QT, Sf, Su, Ss, St, AL, IE, SE for catchment {catchment_idx + 1}...')
 

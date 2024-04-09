@@ -18,7 +18,7 @@ class radiation:
         :param emissivity: Emissivity of grass/forest (none).
         :param a: Albedo (none). Crop Constant.
         :param canopy_type: 'forest' or 'grass'. Will use the text to get values of h, LAI, and zm from the
-                            vars.py file. Default set to 'grass'.
+                            params.py file. Default set to 'grass'.
 
         :param LW_up: Long wave radiation from surface (W m-2). Defaults set to None.
         :param Rn: Net solar radiation (W m-2). Defaults set to None.

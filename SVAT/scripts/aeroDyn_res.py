@@ -14,14 +14,14 @@ class aerodynamic_res:
         Calculates aerodynamic resistance around a canopy.
 
         :param grass_or_forest: 'forest' or 'grass'. Will use the text to get values of h, LAI, and zm from the
-                                vars.py file. Default set to 'grass'.
+                                params.py file. Default set to 'grass'.
 
-        :param k (float): von Karman's constant (none). Comes from "vars.py".
-        :param h (float): Canopy height (m). Comes from "vars.py" based on 'grass'/'forest'.
-        :param LAI (float): Leaf area index (none). Comes from "vars.py" based on 'grass'/'forest'.
-        :param zm (float): Measurement height for wind speed (m). Comes from "vars.py" based on 'grass'/'forest'.
+        :param k (float): von Karman's constant (none). Comes from "params.py".
+        :param h (float): Canopy height (m). Comes from "params.py" based on 'grass'/'forest'.
+        :param LAI (float): Leaf area index (none). Comes from "params.py" based on 'grass'/'forest'.
+        :param zm (float): Measurement height for wind speed (m). Comes from "params.py" based on 'grass'/'forest'.
         :param canopy_type: 'forest' or 'grass'. Will use the text to get values of h, LAI, and zm from the
-                                vars.py file. Default set to 'grass'.
+                                params.py file. Default set to 'grass'.
 
         :param d: Zero plane displacement height (m). Defaults set to None.
         :param z0: Aerodynamic roughness of crop (m). Defaults set to None.
