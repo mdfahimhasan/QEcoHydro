@@ -3,9 +3,9 @@ from model import model
 from Ra_Rso import calc_Ra_Rso
 from reservoirs_ET import calc_ET_PET
 from Lnet_Rn import calc_Lnet, calc_Rn_RC
-from aggregate import aggregate, make_means_new, make_means
+from aggregate import make_means_new, make_means, aggregate, weighted_average_outputs
 
-from plots import make_Budyko_plot, plot_P_PET_Temp, plot_Q_monthly, plot_Q_daily, plot_Q_SM_daily
+from plots import make_Budyko_plot, plot_P_PET_Temp, plot_Q_monthly, plot_Q_daily, plot_SM_daily, plot_SM_monthly
 
 # # datasets
 # 1st 3 columns are year, month, day (except Lat_Lon_Area_Z)
@@ -62,72 +62,184 @@ Q_mean_monthly_sum, Q_mean_annual = make_means_new(Q_arr, dates)
 P_mean_monthly_sum, P_mean_annual = make_means_new(precip_arr, dates)
 Temp_mean_monthly, Temp_mean_annual = make_means(Temp_arr, dates)
 
-# # Components of Budyko plot
+# # Calculating components of Budyko plot
 PET_P = PET_mean_annual / P_mean_annual  # aridity index
 E_P = (P_mean_annual - Q_mean_annual) / P_mean_annual  # evaporative fraction
 
-# # # Simulation 1
-canopy_type = 'grass'
-catchment_no = 10
-catchment_idx = catchment_no - 1
 
-# # climate inputs
-precip_ct = precip_arr[:, catchment_idx]
-temp_ct = Temp_arr[:, catchment_idx]
-e_ct = vp_arr[:, catchment_idx]
-wind_spd_ct = u2_arr[:, catchment_idx]
-SW_in_ct = Sin_arr[:, catchment_idx]
-Lnet_ct = Lnet[:, catchment_idx]
+# # # Simulation 1 (100% Forest)
+run_sim_1 = True
 
-# # params
-mir = 5  # Maximum infiltration rate  [300]
-Su_max = 250  # total water capacity [50-300]
-Ts = 20  # time parameter for slowflow [20-100]
-Tf = 1  # time parameter for quickflow [1-3]
-beta = 1  # split between recharge and overland flow.
+if run_sim_1:
+    print('Running simulation 1: 100% Forest...')
 
-params_ra = {'zm': 22,     # default
-             'd': 14.644,  # default
-             'z0': 2}  # Changed
-params_rs = {'g0': 5,     # Changed
-             'gc': 1}      # default
+    canopy_type = 'forest'
+    catchment_no = 10
+    catchment_idx = catchment_no - 1
 
-FC = 0.35 * Su_max
-WP = 0.11 * Su_max
+    # # climate inputs
+    precip_ct = precip_arr[:, catchment_idx]
+    temp_ct = Temp_arr[:, catchment_idx]
+    e_ct = vp_arr[:, catchment_idx]
+    wind_spd_ct = u2_arr[:, catchment_idx]
+    SW_in_ct = Sin_arr[:, catchment_idx]
+    Lnet_ct = Lnet[:, catchment_idx]
 
-# # model run
-print('Step 5: Running model simulation...')
-output_sim1 = model(P=precip_ct, temp=temp_ct, e=e_ct, wind_spd=wind_spd_ct, SW_in=SW_in_ct, Lnet=Lnet_ct,
-                    FC=FC, WP=WP, mir=mir, Su_max=Su_max, Ts=Ts, Tf=Tf, beta=beta, canopy_type=canopy_type,
-                    params_ra=params_ra, params_rs=params_rs)
+    # # params
+    mir = 5  # Maximum infiltration rate  [300]
+    Su_max = 250  # total water capacity [50-300]
+    Ts = 20  # time parameter for slowflow [20-100]
+    Tf = 1  # time parameter for quickflow [1-3]
+    beta = 1  # split between recharge and overland flow.
 
-output_sim1 = aggregate(output_dict=output_sim1, dates=dates)
+    params_ra = {'zm': 22,     # default
+                 'd': 14.644,  # default
+                 'z0': 2}  # Changed
+    params_rs = {'g0': 5,     # Changed
+                 'gc': 1}      # default
 
-# # Calculating E/P and PET/P for selected catchment
-PET_P_SIM1 = output_sim1['PET_mean_annual'] / output_sim1['P_mean_annual']
-E_P_SIM1 = (output_sim1['P_mean_annual'] - output_sim1['QT_mean_annual']) / output_sim1['P_mean_annual']
+    FC = 0.35 * Su_max
+    WP = 0.11 * Su_max
 
-# # Figure 1: Budyko plot
-make_Budyko_plot(E_P=E_P, PET_P=PET_P, catchment_no=10,
-                 E_P_sim=E_P_SIM1, PET_P_sim=PET_P_SIM1,
-                 savepath=f'../plots/BP_catchment_{catchment_no}_sim1.png')
+    # # model run
+    print('Step 5: Running model simulation...')
+    output_sim1 = model(P=precip_ct, temp=temp_ct, e=e_ct, wind_spd=wind_spd_ct, SW_in=SW_in_ct, Lnet=Lnet_ct,
+                        FC=FC, WP=WP, mir=mir, Su_max=Su_max, Ts=Ts, Tf=Tf, beta=beta, canopy_type=canopy_type,
+                        params_ra=params_ra, params_rs=params_rs)
 
-# # Figure 2: P vs PET vs Temp
-plot_P_PET_Temp(P_mean_monthly_sum, PET_mean_monthly_sum, Temp_mean_monthly,
-                catchment_no=10, save_path=f'../plots/P_PET_Temp_catchment_{catchment_no}_sim1.png')
+    output_sim1 = aggregate(output_dict=output_sim1, dates=dates)
 
-# # Figure 3: Q plots monthly
-plot_Q_monthly(QT_mean_monthly_observed=Q_mean_monthly_sum, QT_mean_monthly_simulated=output_sim1['QT_mean_mon'],
-               QS_mean_monthly_simulated=output_sim1['QS_mean_mon'], QF_mean_monthly_simulated=output_sim1['QF_mean_mon'],
-               catchment_no=10, save_path=f'../plots/Q_monthly_catchment_{catchment_no}_sim1.png')
+    # # Calculating E/P and PET/P for selected catchment
+    PET_P_SIM1 = output_sim1['PET_mean_annual'] / output_sim1['P_mean_annual']
+    E_P_SIM1 = (output_sim1['P_mean_annual'] - output_sim1['QT_mean_annual']) / output_sim1['P_mean_annual']
 
-# # Figure 4: Q plots daily for a year
-plot_Q_daily(QT_daily_observed=Q_arr, QT_daily_simulated=output_sim1['QT'],
-             from_day=365, to_day=730, year=1981,
-             catchment_no=10, save_path=f'../plots/Q_daily_catchment_{catchment_no}_sim1.png')
+    # # Figure 1: Budyko plot
+    make_Budyko_plot(E_P=E_P, PET_P=PET_P, catchment_no=10,
+                     E_P_sim=E_P_SIM1, PET_P_sim=PET_P_SIM1,
+                     savepath=f'../plots/BP_catchment_{catchment_no}_sim1.png')
 
-# # Figure 5: SM vs Q plots daily in a year
+    # # Figure 2: P vs PET vs Temp
+    plot_P_PET_Temp(P_mean_monthly_sum, PET_mean_monthly_sum, Temp_mean_monthly,
+                    catchment_no=10, save_path=f'../plots/P_PET_Temp_catchment_{catchment_no}_sim1.png')
 
-plot_Q_SM_daily(SM_daily_simulated=output_sim1['Su'], QT_daily_simulated=output_sim1['QT'],
-                from_day=365, to_day=730, year=1981,
-                save_path=f'../plots/Q_vs_SM_daily_catchment_{catchment_no}_sim1.png')
+    # # Figure 3: Q plots
+    plot_Q_monthly(QT_mean_monthly_observed=Q_mean_monthly_sum, QT_mean_monthly_simulated=output_sim1['QT_mean_mon'],
+                   QS_mean_monthly_simulated=output_sim1['QS_mean_mon'], QF_mean_monthly_simulated=output_sim1['QF_mean_mon'],
+                   catchment_no=10, save_path=f'../plots/Q_monthly_catchment_{catchment_no}_sim1.png')
+
+    plot_Q_daily(QT_daily_observed=Q_arr, QT_daily_simulated=output_sim1['QT'],
+                 from_day=1460, to_day=1825, year=1984,
+                 catchment_no=10, save_path=f'../plots/Q_daily_catchment_{catchment_no}_sim1.png')
+
+    # # Figure 4: SM plots
+
+    plot_SM_daily(SM_daily_simulated=output_sim1['Su'], from_day=1460, to_day=1825, year=1984,
+                    save_path=f'../plots/SM_daily_catchment_{catchment_no}_sim1.png')
+
+    plot_SM_monthly(SM_monthly_simulated=output_sim1['Su_mean_mon'],
+                    save_path=f'../plots/SM_monthly_catchment_{catchment_no}_sim1.png')
+
+# # # Simulation 2 (80% Forest, 20%  shrubland/grasslands)
+run_sim_2 = True
+
+if run_sim_2:
+    print('Running simulation 2: 70% Forest + 30% shrubland/grasslands...')
+
+    catchment_no = 10
+    catchment_idx = catchment_no - 1
+
+    # # climate inputs
+    precip_ct = precip_arr[:, catchment_idx]
+    temp_ct = Temp_arr[:, catchment_idx]
+    e_ct = vp_arr[:, catchment_idx]
+    wind_spd_ct = u2_arr[:, catchment_idx]
+    SW_in_ct = Sin_arr[:, catchment_idx]
+    Lnet_ct = Lnet[:, catchment_idx]
+
+    # # params for forest
+    mir = 5  # Maximum infiltration rate  [300]
+    Su_max = 250  # total water capacity [50-300]
+    Ts = 20  # time parameter for slowflow [20-100]
+    Tf = 1  # time parameter for quickflow [1-3]
+    beta = 1  # split between recharge and overland flow.
+
+    params_ra = {'zm': 22,     # default
+                 'd': 14.644,  # default
+                 'z0': 1}      # Changed
+    params_rs = {'g0': 5,      # Changed
+                 'gc': 1}      # default
+
+    FC = 0.35 * Su_max
+    WP = 0.11 * Su_max
+
+    # # model run for forest
+    output_sim_forest = model(P=precip_ct, temp=temp_ct, e=e_ct, wind_spd=wind_spd_ct, SW_in=SW_in_ct, Lnet=Lnet_ct,
+                              FC=FC, WP=WP, mir=mir, Su_max=Su_max, Ts=Ts, Tf=Tf, beta=beta, canopy_type='forest',
+                              params_ra=params_ra, params_rs=params_rs)
+
+    # # params for shrubland/grasslands
+    mir = 10  # Maximum infiltration rate  [300]
+    Su_max = 200  # total water capacity [50-300]
+    Ts = 20  # time parameter for slowflow [20-100]
+    Tf = 1  # time parameter for quickflow [1-3]
+    beta = 1  # split between recharge and overland flow.
+
+    params_ra = {'zm': 2,        # default
+                 'd': 0.077,     # default
+                 'z0': 0.238}    # Changed
+    params_rs = {'g0': 3.33,     # Changed
+                 'gc': 1}        # default
+
+    FC = 0.35 * Su_max
+    WP = 0.11 * Su_max
+
+    # # model run for shrubland/grasslands
+    output_sim_grass = model(P=precip_ct, temp=temp_ct, e=e_ct, wind_spd=wind_spd_ct, SW_in=SW_in_ct, Lnet=Lnet_ct,
+                             FC=FC, WP=WP, mir=mir, Su_max=Su_max, Ts=Ts, Tf=Tf, beta=beta, canopy_type='grass',
+                             params_ra=params_ra, params_rs=params_rs)
+
+    # # combining outputs by weight of land cover types
+    output_sim2 = weighted_average_outputs(output_A=output_sim_forest, output_B=output_sim_grass,
+                                           weight_A=0.5, weight_B=0.5)
+    output_sim2 = aggregate(output_dict=output_sim2, dates=dates)
+
+    # # Calculating E/P and PET/P for selected catchment
+    PET_P_SIM1 = output_sim2['PET_mean_annual'] / output_sim2['P_mean_annual']
+    E_P_SIM1 = (output_sim2['P_mean_annual'] - output_sim2['QT_mean_annual']) / output_sim2['P_mean_annual']
+
+    # # Figure 1: Budyko plot
+    make_Budyko_plot(E_P=E_P, PET_P=PET_P, catchment_no=10,
+                     E_P_sim=E_P_SIM1, PET_P_sim=PET_P_SIM1,
+                     savepath=f'../plots/BP_catchment_{catchment_no}_sim2.png')
+
+    # # Figure 2: P vs PET vs Temp
+    plot_P_PET_Temp(P_mean_monthly_sum, PET_mean_monthly_sum, Temp_mean_monthly,
+                    catchment_no=10, save_path=f'../plots/P_PET_Temp_catchment_{catchment_no}_sim2.png')
+
+    # # Figure 3: Q plots
+    plot_Q_monthly(QT_mean_monthly_observed=Q_mean_monthly_sum, QT_mean_monthly_simulated=output_sim2['QT_mean_mon'],
+                   QS_mean_monthly_simulated=output_sim2['QS_mean_mon'], QF_mean_monthly_simulated=output_sim2['QF_mean_mon'],
+                   catchment_no=10, save_path=f'../plots/Q_monthly_catchment_{catchment_no}_sim2.png')
+
+    # plot_Q_daily(QT_daily_observed=Q_arr, QT_daily_simulated=output_sim1['QT'],
+    #              from_day=1460, to_day=1825, year=1984,
+    #              catchment_no=10, save_path=f'../plots/Q_daily_catchment_{catchment_no}_sim1.png')
+    #
+    # # # Figure 4: SM plots
+    #
+    # plot_SM_daily(SM_daily_simulated=output_sim1['Su'], from_day=1460, to_day=1825, year=1984,
+    #                 save_path=f'../plots/SM_daily_catchment_{catchment_no}_sim1.png')
+    #
+    # plot_SM_monthly(SM_monthly_simulated=output_sim1['Su_mean_mon'],
+    #                 save_path=f'../plots/SM_monthly_catchment_{catchment_no}_sim1.png')
+
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()
+ax.plot(output_sim1['QT_mean_mon'], label='100% Forest')
+ax.plot(output_sim2['QT_mean_mon'], label='70% Forest-30% grass')
+ax.legend()
+fig.savefig('../plots/Q_comparison.png')
+
+print(output_sim1['QT_mean_mon'])
+print(output_sim2['QT_mean_mon'])

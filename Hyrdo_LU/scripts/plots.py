@@ -106,7 +106,7 @@ def plot_Q_daily(QT_daily_observed, QT_daily_simulated, from_day, to_day, year,
     fig.savefig(save_path, dpi=100)
 
 
-def plot_Q_SM_daily(SM_daily_simulated, QT_daily_simulated, from_day, to_day, year,
+def plot_SM_daily(SM_daily_simulated, from_day, to_day, year,
                     save_path):
 
     days = list(range(from_day, to_day))
@@ -118,20 +118,17 @@ def plot_Q_SM_daily(SM_daily_simulated, QT_daily_simulated, from_day, to_day, ye
     plt.ylabel('mm', color='g')
     plt.xlabel('days')
 
-    ax2 = plt.twinx()  # Create secondary y-axis and plot
-    ax2.plot(days, QT_daily_simulated[from_day: to_day], linewidth=0.5, label='Q simulated')
-    plt.ylabel('mm', color='b')
-    ax2.tick_params(axis='y', colors='b')  # Set the color of the secondary y-axis label and tick labels to blue
+    fig.savefig(save_path, dpi=100)
 
-    handles1, labels1 = ax1.get_legend_handles_labels()  # Save the handles and labels of the first axis
-    handles2, labels2 = ax2.get_legend_handles_labels() # Save the handles and labels of the second axis
-    handles = handles1 + handles2   # Combine handles and labels from both axes
-    labels = labels1 + labels2
 
-    tick_labels = list(np.arange(1, to_day + 1 - from_day, 50))
-    days = list(range(from_day, to_day, 50))
-    plt.xticks(days, tick_labels)
-    plt.title(f'for year: {year}')
-    plt.legend(handles, labels, loc='best')
+def plot_SM_monthly(SM_monthly_simulated, save_path):
+
+    months = list(range(1, 13))
+
+    fig, ax = plt.subplots()
+    plt.plot(months, SM_monthly_simulated, '-g', linewidth=0.5, label='Soil Moisture')
+    plt.ylabel('mm')
+    plt.xlabel('month')
+    plt.legend()
 
     fig.savefig(save_path, dpi=100)

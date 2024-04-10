@@ -136,3 +136,21 @@ def aggregate(output_dict, dates):
     output_dict['pot_inf_mean_mon'], output_dict['pot_inf_mean_annual'] = make_means_new(output_dict['pot_inf'], dates)
 
     return output_dict
+
+
+def weighted_average_outputs(output_A, output_B, weight_A, weight_B):
+    # Initialize OUT dictionary
+    weighted_output = {}
+
+    # Calculate weighted averages for each field
+    fluxes = ['Ea', 'QF', 'R', 'QS', 'QT', 'Sf', 'Su', 'Ss', 'St', 'AL', 'IE', 'SE', 'Ei', 'Et', 'S_canopy', 'pot_inf']
+
+    for flux in fluxes:
+        weighted_output[flux] = weight_A * output_A[flux] + weight_B * output_B[flux]
+
+    # Directly copy these fields from output_A
+    direct_copy_fluxes = ['P', 'Ep']
+    for flux in direct_copy_fluxes:
+        weighted_output[flux] = output_A[flux]
+
+    return weighted_output
