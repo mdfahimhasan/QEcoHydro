@@ -70,7 +70,7 @@ catchment_no = 10
 catchment_idx = catchment_no - 1
 
 output_sim1_save_path = '../outputs/output_sim1.pkl'
-run_sim_1 = False  # # # # # set to True to run simulation
+run_sim_1 = True  # # # # # set to True to run simulation
 
 if run_sim_1:
     print('Running simulation 1: 100% Forest...')
@@ -135,7 +135,7 @@ if run_sim_1:
 
 # # # Simulation 2 (80% Forest, 20%  shrubland/grasslands)
 output_sim2_save_path = '../outputs/output_sim2.pkl'
-run_sim_2 = False  # # # # # set to True to run simulation
+run_sim_2 = True  # # # # # set to True to run simulation
 
 if run_sim_2:
     print('Running simulation 2: 70% Forest + 30% shrubland/grasslands...')
