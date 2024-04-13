@@ -63,7 +63,7 @@ def calc_ET_PET(temp, e, wind_spd, SW_in, Lnet, FC, WP, Su_0, et_type='et',
     :param Su_0: Initial storage in the unsaturated zone.
     :param et_type: If 'et' will calculate ET (transpiration from canopy). If 'pet', will calculate PET.
     :param canopy_type: 'forest' or 'grass'. Will use the text to get values of h, LAI, and zm from the
-                          vars_constants.py file. Default set to 'grass'.
+                          vars_constants.py file. Default set to 'grass'. No effect when et_type='pet'.
     :param params_ra: A dictionary of params zm, d, z0 to adjust manually for aerodynamic resistance.
                         Default set to None to use these vars from the vars_constants.py.
     :param params_rs: A dictionary of params g0 and gc to adjust manually for stomatal resistance.
@@ -167,9 +167,10 @@ def SU_eq_mod(Su_0, P, Sumax, alpha, beta, S_canopy_old,
     # rain_pass (rain not intercepted by canopy). Otherwise, rain_pass will be zero
     if S_canopy_temp > S_canopy_max:
         rain_pass = S_canopy_temp - S_canopy_max
-        S_canopy_temp = S_canopy_max
     else:
         rain_pass = 0
+
+    S_canopy_temp = min(S_canopy_max, S_canopy_temp)
 
     # # Soil water balance
     # Update unsaturated storage with the part of precipitation that was not intercepted by canopy
@@ -191,7 +192,7 @@ def SU_eq_mod(Su_0, P, Sumax, alpha, beta, S_canopy_old,
                                               params_ra=params_ra, params_rs=params_rs)
 
     E_pot, E_pot_mm, ra_p, rs_p = calc_ET_PET(temp=temp, e=e, wind_spd=wind_spd, SW_in=SW_in, Lnet=Lnet, FC=FC, WP=WP,
-                                          Su_0=Su_0, et_type='pet', canopy_type=canopy_type)
+                                          Su_0=Su_0, et_type='pet', canopy_type=None)  # No effect of canopy_type when et_type='pet'.
 
     # # updating canopy water balance
     # if PET is greater than canopy temporary storage (canopy old storage + precip or S-canopy_max), evaporation

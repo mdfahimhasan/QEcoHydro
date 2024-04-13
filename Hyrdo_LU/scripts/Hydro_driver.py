@@ -1,3 +1,4 @@
+import pickle
 import numpy as np
 from model import model
 from Ra_Rso import calc_Ra_Rso
@@ -5,7 +6,8 @@ from reservoirs_ET import calc_ET_PET
 from Lnet_Rn import calc_Lnet, calc_Rn_RC
 from aggregate import make_means_new, make_means, aggregate, weighted_average_outputs
 
-from plots import make_Budyko_plot, plot_P_PET_Temp, plot_Q_monthly, plot_Q_daily, plot_SM_daily, plot_SM_monthly
+from plots import make_Budyko_plot, plot_P_PET_Temp, plot_Q_monthly, plot_Q_daily, plot_compare_fluxes, \
+    plot_FDC, plot_FFC
 
 # # datasets
 # 1st 3 columns are year, month, day (except Lat_Lon_Area_Z)
@@ -45,16 +47,13 @@ print('Step 2: Estimated net Longwave radiation...')
 # # Generate net radiation for reference crop
 # this step is calculated within the calc_PET function in the next step
 print('Step 3: Estimated net radiation...')
-Rn_RC = calc_Rn_RC(SW_in=Sin_arr, Lnet=Lnet)   # in W/m2
-
+Rn_RC = calc_Rn_RC(SW_in=Sin_arr, Lnet=Lnet)  # in W/m2
 
 # # calculate PET
-canopy_type = 'forest'
 print('Step 4: Calculating PET...')
 PET, PET_mm, _, _ = calc_ET_PET(temp=Temp_arr, e=vp_arr, wind_spd=u2_arr, SW_in=Sin_arr,
-                                Lnet=Lnet, et_type='pet', canopy_type=canopy_type,
+                                Lnet=Lnet, et_type='pet', canopy_type=None,
                                 FC=None, WP=None, Su_0=None)
-
 
 # # aggregating basin PET, Q, P, and temperature values at monthly and annual scale
 PET_mean_monthly_sum, PET_mean_annual = make_means_new(PET_mm, dates)
@@ -66,16 +65,17 @@ Temp_mean_monthly, Temp_mean_annual = make_means(Temp_arr, dates)
 PET_P = PET_mean_annual / P_mean_annual  # aridity index
 E_P = (P_mean_annual - Q_mean_annual) / P_mean_annual  # evaporative fraction
 
-
 # # # Simulation 1 (100% Forest)
-run_sim_1 = True
+catchment_no = 10
+catchment_idx = catchment_no - 1
+
+output_sim1_save_path = '../outputs/output_sim1.pkl'
+run_sim_1 = False  # # # # # set to True to run simulation
 
 if run_sim_1:
     print('Running simulation 1: 100% Forest...')
 
     canopy_type = 'forest'
-    catchment_no = 10
-    catchment_idx = catchment_no - 1
 
     # # climate inputs
     precip_ct = precip_arr[:, catchment_idx]
@@ -86,17 +86,17 @@ if run_sim_1:
     Lnet_ct = Lnet[:, catchment_idx]
 
     # # params
-    mir = 5  # Maximum infiltration rate  [300]
-    Su_max = 250  # total water capacity [50-300]
-    Ts = 20  # time parameter for slowflow [20-100]
+    mir = 30  # Maximum infiltration rate  [300]
+    Su_max = 200  # total water capacity [50-300]
+    Ts = 30  # time parameter for slowflow [20-100]
     Tf = 1  # time parameter for quickflow [1-3]
     beta = 1  # split between recharge and overland flow.
 
-    params_ra = {'zm': 22,     # default
+    params_ra = {'zm': 22,  # default
                  'd': 14.644,  # default
                  'z0': 2}  # Changed
-    params_rs = {'g0': 5,     # Changed
-                 'gc': 1}      # default
+    params_rs = {'g0': 5,  # Changed
+                 'gc': 1}  # default
 
     FC = 0.35 * Su_max
     WP = 0.11 * Su_max
@@ -113,6 +113,9 @@ if run_sim_1:
     PET_P_SIM1 = output_sim1['PET_mean_annual'] / output_sim1['P_mean_annual']
     E_P_SIM1 = (output_sim1['P_mean_annual'] - output_sim1['QT_mean_annual']) / output_sim1['P_mean_annual']
 
+    # # save results' dictionary
+    pickle.dump(output_sim1, open(output_sim1_save_path, mode='wb+'))
+
     # # Figure 1: Budyko plot
     make_Budyko_plot(E_P=E_P, PET_P=PET_P, catchment_no=10,
                      E_P_sim=E_P_SIM1, PET_P_sim=PET_P_SIM1,
@@ -124,29 +127,18 @@ if run_sim_1:
 
     # # Figure 3: Q plots
     plot_Q_monthly(QT_mean_monthly_observed=Q_mean_monthly_sum, QT_mean_monthly_simulated=output_sim1['QT_mean_mon'],
-                   QS_mean_monthly_simulated=output_sim1['QS_mean_mon'], QF_mean_monthly_simulated=output_sim1['QF_mean_mon'],
                    catchment_no=10, save_path=f'../plots/Q_monthly_catchment_{catchment_no}_sim1.png')
 
     plot_Q_daily(QT_daily_observed=Q_arr, QT_daily_simulated=output_sim1['QT'],
                  from_day=1460, to_day=1825, year=1984,
                  catchment_no=10, save_path=f'../plots/Q_daily_catchment_{catchment_no}_sim1.png')
 
-    # # Figure 4: SM plots
-
-    plot_SM_daily(SM_daily_simulated=output_sim1['Su'], from_day=1460, to_day=1825, year=1984,
-                    save_path=f'../plots/SM_daily_catchment_{catchment_no}_sim1.png')
-
-    plot_SM_monthly(SM_monthly_simulated=output_sim1['Su_mean_mon'],
-                    save_path=f'../plots/SM_monthly_catchment_{catchment_no}_sim1.png')
-
 # # # Simulation 2 (80% Forest, 20%  shrubland/grasslands)
-run_sim_2 = True
+output_sim2_save_path = '../outputs/output_sim2.pkl'
+run_sim_2 = False  # # # # # set to True to run simulation
 
 if run_sim_2:
     print('Running simulation 2: 70% Forest + 30% shrubland/grasslands...')
-
-    catchment_no = 10
-    catchment_idx = catchment_no - 1
 
     # # climate inputs
     precip_ct = precip_arr[:, catchment_idx]
@@ -163,11 +155,11 @@ if run_sim_2:
     Tf = 1  # time parameter for quickflow [1-3]
     beta = 1  # split between recharge and overland flow.
 
-    params_ra = {'zm': 22,     # default
+    params_ra = {'zm': 22,  # default
                  'd': 14.644,  # default
-                 'z0': 1}      # Changed
-    params_rs = {'g0': 5,      # Changed
-                 'gc': 1}      # default
+                 'z0': 1}  # Changed
+    params_rs = {'g0': 5,  # Changed
+                 'gc': 1}  # default
 
     FC = 0.35 * Su_max
     WP = 0.11 * Su_max
@@ -178,17 +170,17 @@ if run_sim_2:
                               params_ra=params_ra, params_rs=params_rs)
 
     # # params for shrubland/grasslands
-    mir = 10  # Maximum infiltration rate  [300]
+    mir = 30  # Maximum infiltration rate  [300]
     Su_max = 200  # total water capacity [50-300]
-    Ts = 20  # time parameter for slowflow [20-100]
+    Ts = 30  # time parameter for slowflow [20-100]
     Tf = 1  # time parameter for quickflow [1-3]
     beta = 1  # split between recharge and overland flow.
 
-    params_ra = {'zm': 2,        # default
-                 'd': 0.077,     # default
-                 'z0': 0.238}    # Changed
-    params_rs = {'g0': 3.33,     # Changed
-                 'gc': 1}        # default
+    params_ra = {'zm': 2,  # default
+                 'd': 0.077,  # default
+                 'z0': 0.238}  # Changed
+    params_rs = {'g0': 3.33,  # Changed
+                 'gc': 1}  # default
 
     FC = 0.35 * Su_max
     WP = 0.11 * Su_max
@@ -207,39 +199,59 @@ if run_sim_2:
     PET_P_SIM1 = output_sim2['PET_mean_annual'] / output_sim2['P_mean_annual']
     E_P_SIM1 = (output_sim2['P_mean_annual'] - output_sim2['QT_mean_annual']) / output_sim2['P_mean_annual']
 
-    # # Figure 1: Budyko plot
-    make_Budyko_plot(E_P=E_P, PET_P=PET_P, catchment_no=10,
-                     E_P_sim=E_P_SIM1, PET_P_sim=PET_P_SIM1,
-                     savepath=f'../plots/BP_catchment_{catchment_no}_sim2.png')
+    # # save results' dictionary
+    pickle.dump(output_sim2, open(output_sim2_save_path, mode='wb+'))
 
-    # # Figure 2: P vs PET vs Temp
-    plot_P_PET_Temp(P_mean_monthly_sum, PET_mean_monthly_sum, Temp_mean_monthly,
-                    catchment_no=10, save_path=f'../plots/P_PET_Temp_catchment_{catchment_no}_sim2.png')
+# # Load simulation results
+output_sim1 = pickle.load(open(output_sim1_save_path, mode='rb'))
+output_sim2 = pickle.load(open(output_sim2_save_path, mode='rb'))
 
-    # # Figure 3: Q plots
-    plot_Q_monthly(QT_mean_monthly_observed=Q_mean_monthly_sum, QT_mean_monthly_simulated=output_sim2['QT_mean_mon'],
-                   QS_mean_monthly_simulated=output_sim2['QS_mean_mon'], QF_mean_monthly_simulated=output_sim2['QF_mean_mon'],
-                   catchment_no=10, save_path=f'../plots/Q_monthly_catchment_{catchment_no}_sim2.png')
+# Compare soil moisture SIM 1 vs SIM 2
+plot_compare_fluxes(flux_sim_1=output_sim1['Su_mean_mon'], flux_sim_2=output_sim2['Su_mean_mon'],
+                    label1='SIM 1: 100% Forest', label2='SIM 2: 70% Forest + 30% grass',
+                    ylabel='mm', title='Soil moisture storage',
+                    save_path=f'../plots/SM_SIM1_SIM2_catchment_{catchment_no}.png')
 
-    # plot_Q_daily(QT_daily_observed=Q_arr, QT_daily_simulated=output_sim1['QT'],
-    #              from_day=1460, to_day=1825, year=1984,
-    #              catchment_no=10, save_path=f'../plots/Q_daily_catchment_{catchment_no}_sim1.png')
-    #
-    # # # Figure 4: SM plots
-    #
-    # plot_SM_daily(SM_daily_simulated=output_sim1['Su'], from_day=1460, to_day=1825, year=1984,
-    #                 save_path=f'../plots/SM_daily_catchment_{catchment_no}_sim1.png')
-    #
-    # plot_SM_monthly(SM_monthly_simulated=output_sim1['Su_mean_mon'],
-    #                 save_path=f'../plots/SM_monthly_catchment_{catchment_no}_sim1.png')
+# Compare streamflow SIM 1 vs SIM 2
+plot_compare_fluxes(flux_sim_1=output_sim1['QT_mean_mon'], flux_sim_2=output_sim2['QT_mean_mon'],
+                    label1='SIM 1: 100% Forest', label2='SIM 2: 70% Forest + 30% grass',
+                    ylabel='mm', title='Streamflow',
+                    save_path=f'../plots/QT_SIM1_SIM2_catchment_{catchment_no}.png')
 
-import matplotlib.pyplot as plt
+# Compare baseflow SIM 1 vs SIM 2
+plot_compare_fluxes(flux_sim_1=output_sim1['QS_mean_mon'], flux_sim_2=output_sim2['QS_mean_mon'],
+                    label1='SIM 1: 100% Forest', label2='SIM 2: 70% Forest + 30% grass',
+                    ylabel='mm', title='Baseflow',
+                    save_path=f'../plots/QS_SIM1_SIM2_catchment_{catchment_no}.png')
 
-fig, ax = plt.subplots()
-ax.plot(output_sim1['QT_mean_mon'], label='100% Forest')
-ax.plot(output_sim2['QT_mean_mon'], label='70% Forest-30% grass')
-ax.legend()
-fig.savefig('../plots/Q_comparison.png')
+# Compare quickflow SIM 1 vs SIM 2
+plot_compare_fluxes(flux_sim_1=output_sim1['QF_mean_mon'], flux_sim_2=output_sim2['QF_mean_mon'],
+                    label1='SIM 1: 100% Forest', label2='SIM 2: 70% Forest + 30% grass',
+                    ylabel='mm', title='Qucikflow',
+                    save_path=f'../plots/QF_SIM1_SIM2_catchment_{catchment_no}.png')
 
-print(output_sim1['QT_mean_mon'])
-print(output_sim2['QT_mean_mon'])
+# Compare recharge SIM 1 vs SIM 2
+plot_compare_fluxes(flux_sim_1=output_sim1['R_mean_mon'], flux_sim_2=output_sim2['R_mean_mon'],
+                    label1='SIM 1: 100% Forest', label2='SIM 2: 70% Forest + 30% grass',
+                    ylabel='mm', title='Recharge',
+                    save_path=f'../plots/R_SIM1_SIM2_catchment_{catchment_no}.png')
+
+# Compare ET SIM 1 vs SIM 2
+plot_compare_fluxes(flux_sim_1=output_sim1['E_mean_mon'], flux_sim_2=output_sim2['E_mean_mon'],
+                    label1='SIM 1: 100% Forest', label2='SIM 2: 70% Forest + 30% grass',
+                    ylabel='mm', title='ET',
+                    save_path=f'../plots/ET_SIM1_SIM2_catchment_{catchment_no}.png')
+
+# Compare Saturated reservoir storage SIM 1 vs SIM 2
+plot_compare_fluxes(flux_sim_1=output_sim1['S_canopy_mean_mon'], flux_sim_2=output_sim2['S_canopy_mean_mon'],
+                    label1='SIM 1: 100% Forest', label2='SIM 2: 70% Forest + 30% grass',
+                    ylabel='mm', title='Canopy storage',
+                    save_path=f'../plots/S_canopy_SIM1_SIM2_catchment_{catchment_no}.png')
+
+# Flow Duration curve
+plot_FDC(sim1_QT_daily=output_sim1['QT'], sim2_QT_daily=output_sim2['QT'],
+         save_path=f'../plots/FDC_SIM1_SIM2_catchment_{catchment_no}.png')
+
+# Flood Frequqncy curve
+plot_FFC(dates=dates, sim1_QT_daily=output_sim1['QT'], sim2_QT_daily=output_sim2['QT'],
+         save_path=f'../plots/FFC_SIM1_SIM2_catchment_{catchment_no}.png')
